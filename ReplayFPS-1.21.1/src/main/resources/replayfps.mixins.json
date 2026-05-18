@@ -1,0 +1,24 @@
+{
+    "required": true,
+    "package": "com.igrium.replayfps.core.mixin",
+    "compatibilityLevel": "JAVA_17",
+    "mixins": [
+        "ReplayModMixin",
+        "PacketListenerAccessor",
+        "ConnectionEventHandlerMixin",
+        "PacketListenerMixin",
+        "GameRendererMixin",
+        "SkipHudDuringRenderMixinSquared",
+        "SkipOverlayDuringRenderMixin",
+        "ShowHotbarDuringRenderMixin",
+        "ClientConnectionAccessor",
+        "ClientConnectionMixin",
+        "ReplayHandlerMixin",
+        "FullReplaySenderMixin",
+        "ChatHudMixin",
+        "AbstractChanneledNetworkAddonMixin"
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    }
+}

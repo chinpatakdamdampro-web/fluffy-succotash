@@ -1,0 +1,14 @@
+{
+    "required": true,
+    "package": "com.igrium.replayfps.game.mixin",
+    "compatibilityLevel": "JAVA_17",
+    "mixins": [
+        "ClientPlayerEntityMixin",
+        "LivingEntityAccessor",
+        "PlayerInventoryMixin",
+        "MinecraftClientMixin"
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    }
+}

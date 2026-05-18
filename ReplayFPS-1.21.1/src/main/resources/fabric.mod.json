@@ -1,0 +1,37 @@
+{
+    "schemaVersion": 1,
+    "id": "replayfps",
+    "version": "${version}",
+    "name": "Replay FPS",
+    "description": "An addon to the Replay Mod that improves how first-person views are handled.",
+    "authors": [
+        "Igrium"
+    ],
+    "contact": {
+        "homepage": "https://github.com/Igrium/ReplayFPS",
+        "sources": "https://github.com/Igrium/ReplayFPS"
+    },
+    "license": "MIT",
+    "icon": "assets/replayfps/logo.png",
+    "environment": "*",
+    "entrypoints": {
+        "main": [
+            "com.igrium.replayfps.ReplayFPS"
+        ],
+        "modmenu": [
+            "com.igrium.replayfps.ReplayFPSModMenu"
+        ]
+    },
+    "mixins": [
+        "replayfps.mixins.json",
+        "replayfps.mixins.gameplay.json"
+    ],
+    "depends": {
+        "fabricloader": ">=0.16.0",
+        "minecraft": "~1.21.1",
+        "java": ">=21",
+        "fabric-api": "*",
+        "replaymod": ">=1.21-2.6.17",
+        "cloth-config": ">=15.0.140"
+    }
+}
