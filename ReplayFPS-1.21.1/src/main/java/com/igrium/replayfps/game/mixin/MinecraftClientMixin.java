@@ -18,3 +18,4 @@ public class MinecraftClientMixin {
     void replayfps$onJoinWorld(ClientWorld world, WorldLoadingState worldLoadingState, CallbackInfo ci) {
         ClientJoinedWorldEvent.EVENT.invoker().onJoinedWorld((MinecraftClient) (Object) this, world);
     }
+}
