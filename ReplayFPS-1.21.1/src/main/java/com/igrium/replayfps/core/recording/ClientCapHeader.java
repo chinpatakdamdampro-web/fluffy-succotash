@@ -27,17 +27,12 @@ public class ClientCapHeader {
 
     public static class HeaderFormatException extends IOException {
         public HeaderFormatException() {}
-
-        public HeaderFormatException(String message) {
-            super(message);
-        }
+        public HeaderFormatException(String message) { super(message); }
     }
     
     private static final Identifier INVALID_IDENTIFIER = Identifier.of("replayfps", "invalid");
     private Logger logger = LogUtils.getLogger();
-
     private List<ChannelHandler<?>> channels;
-    
     private int framerate = 40;
     private int framerateBase = 1;
     private int localPlayerID = -1;
@@ -50,35 +45,18 @@ public class ClientCapHeader {
         this.channels = new ArrayList<>();
     }
 
-    public final List<ChannelHandler<?>> getChannels() {
-        return channels;
-    }
-
-    public int numChannels() {
-        return channels.size();
-    }
-
-    public final int getLocalPlayerID() {
-        return localPlayerID;
-    }
-
-    public void setLocalPlayerID(int localPlayerID) {
-        this.localPlayerID = localPlayerID;
-    }
-
-    public final int getFramerate() {
-        return framerate;
-    }
-
-    public final int getFramerateBase() {
-        return framerateBase;
-    }
+    public final List<ChannelHandler<?>> getChannels() { return channels; }
+    public int numChannels() { return channels.size(); }
+    public final int getLocalPlayerID() { return localPlayerID; }
+    public void setLocalPlayerID(int localPlayerID) { this.localPlayerID = localPlayerID; }
+    public final int getFramerate() { return framerate; }
+    public final int getFramerateBase() { return framerateBase; }
 
     public void setFramerate(int framerate) {
         if (framerate < 1) throw new IllegalArgumentException("Framerate must be at least 1.");
         this.framerate = framerate;
     }
-    
+
     public void setFramerateBase(int framerateBase) {
         if (framerateBase < 1) throw new IllegalArgumentException("Framerate base must be at least 1.");
         this.framerateBase = framerateBase;
@@ -89,24 +67,15 @@ public class ClientCapHeader {
         setFramerateBase(framerateBase);
     }
 
-    public float getFramerateFloat() {
-        return ((float) framerate) / ((float) framerateBase);
-    }
-
-    public float getFrameInterval() {
-        return ((float) framerateBase) / ((float) framerate);
-    }
-
-    public int getFrameIntervalMillis() {
-        return (framerateBase * 1000) / framerate;
-    }
+    public float getFramerateFloat() { return ((float) framerate) / ((float) framerateBase); }
+    public float getFrameInterval() { return ((float) framerateBase) / ((float) framerate); }
+    public int getFrameIntervalMillis() { return (framerateBase * 1000) / framerate; }
 
     public NbtCompound writeNBT(NbtCompound nbt) {
         if (localPlayerID == -1) throw new IllegalStateException("Local player ID has not been set!");
         nbt.putInt("framerate", framerate);
         nbt.putInt("framerateBase", framerateBase);
         nbt.putInt("localPlayerID", localPlayerID);
-
         NbtList channels = new NbtList();
         for (ChannelHandler<?> handler : this.channels) {
             channels.add(writeChannelDeclaration(handler, new NbtCompound()));
@@ -124,26 +93,14 @@ public class ClientCapHeader {
     }
 
     public void readNBT(NbtCompound nbt) throws HeaderFormatException {
-        if (nbt.contains("framerate", NbtElement.INT_TYPE)) {
-            setFramerate(nbt.getInt("framerate"));
-        }
-        
-        if (nbt.contains("framerateBase", NbtElement.INT_TYPE)) {
-            setFramerateBase(nbt.getInt("framerateBase"));
-        }
-
-        if (!nbt.contains("channels", NbtElement.LIST_TYPE)) {
-            throw new HeaderFormatException("No channel declaration found.");
-        }
-        
+        if (nbt.contains("framerate", NbtElement.INT_TYPE)) setFramerate(nbt.getInt("framerate"));
+        if (nbt.contains("framerateBase", NbtElement.INT_TYPE)) setFramerateBase(nbt.getInt("framerateBase"));
+        if (!nbt.contains("channels", NbtElement.LIST_TYPE)) throw new HeaderFormatException("No channel declaration found.");
         NbtList channels = nbt.getList("channels", NbtElement.COMPOUND_TYPE);
         for (NbtElement element : channels) {
             this.channels.add(readChannelDeclaration((NbtCompound) element));
         }
-
-        if (!nbt.contains("localPlayerID", NbtElement.INT_TYPE)) {
-            throw new HeaderFormatException("No local player ID found.");
-        }
+        if (!nbt.contains("localPlayerID", NbtElement.INT_TYPE)) throw new HeaderFormatException("No local player ID found.");
         localPlayerID = nbt.getInt("localPlayerID");
     }
 
@@ -155,18 +112,13 @@ public class ClientCapHeader {
         } catch (InvalidIdentifierException e) {
             throw new HeaderFormatException("Invalid channel id: " + name);
         }
-
-        if (!nbt.contains("size", NbtElement.INT_TYPE)) {
-            throw new HeaderFormatException("Channel must specify a size.");
-        }
+        if (!nbt.contains("size", NbtElement.INT_TYPE)) throw new HeaderFormatException("Channel must specify a size.");
         int size = nbt.getInt("size");
-
         ChannelHandler<?> handler = ChannelHandlers.REGISTRY.get(id);
         if (handler == null) {
             logger.warn("Unknown channel type: " + id);
             handler = new PlaceholderChannelHandler(size);
         }
-
         if (handler.getChannelType().getSize() != size) {
             logger.error("Improper channel size for handler type '%s'! (%d != %d)".formatted(id, size, handler.getChannelType().getSize()));
             handler = new PlaceholderChannelHandler(size);
@@ -179,11 +131,11 @@ public class ClientCapHeader {
     }
 
     public void readHeader(InputStream in) throws IOException {
-        // In 1.20.3+, NbtIo.readCompound requires a NbtSizeTracker
-        NbtCompound nbt = NbtIo.readCompound(new DataInputStream(in), NbtSizeTracker.ofUnlimited());
+        // In 1.21.1 yarn: NbtSizeTracker.unlimitedHeap() is the correct method
+        NbtCompound nbt = NbtIo.readCompound(new DataInputStream(in), NbtSizeTracker.unlimitedHeap());
         readNBT(nbt);
     }
-    
+
     public int calculateFrameLength() {
         int length = 0;
         for (ChannelHandler<?> handler : channels) {

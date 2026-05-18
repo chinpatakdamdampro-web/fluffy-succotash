@@ -17,10 +17,10 @@ import net.minecraft.text.Text;
 @Mixin(ChatHud.class)
 public class ChatHudMixin {
 
-    // In 1.21.1 the addMessage signature dropped the int ticks parameter
-    @Inject(method = "addMessage(Lnet/minecraft/text/Text;Lnet/minecraft/network/message/MessageSignatureData;Lnet/minecraft/client/gui/hud/MessageIndicator;Z)V",
+    // In 1.21.1 the public addMessage signature is (Text, MessageSignatureData, MessageIndicator)
+    @Inject(method = "addMessage(Lnet/minecraft/text/Text;Lnet/minecraft/network/message/MessageSignatureData;Lnet/minecraft/client/gui/hud/MessageIndicator;)V",
             at = @At("HEAD"), cancellable = true)
-    void replayfps$onAddMessage(Text message, MessageSignatureData signature, MessageIndicator indicator, boolean refresh, CallbackInfo ci) {
+    void replayfps$onAddMessage(Text message, MessageSignatureData signature, MessageIndicator indicator, CallbackInfo ci) {
         ReplayHandler handler = ClientPlaybackModule.getInstance().getCurrentReplay();
         if (handler != null && handler.getReplaySender() instanceof FullReplaySender sender) {
             if (sender.isHurrying()) ci.cancel();

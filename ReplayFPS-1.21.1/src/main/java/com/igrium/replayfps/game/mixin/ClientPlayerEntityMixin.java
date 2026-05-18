@@ -22,7 +22,7 @@ public class ClientPlayerEntityMixin {
     void replayfps$gamemodeChanged(GameMode gameMode, CallbackInfo ci) {
         ClientPlayerEvents.SET_GAMEMODE.invoker().onSetGamemode(
                 (ClientPlayerEntity) (Object) this,
-                client.interactionManager.getGameMode(),
+                client.interactionManager.getCurrentGameMode(),
                 gameMode);
     }
 }

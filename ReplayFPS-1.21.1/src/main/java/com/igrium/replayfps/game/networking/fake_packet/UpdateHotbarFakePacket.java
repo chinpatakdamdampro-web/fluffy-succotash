@@ -33,7 +33,8 @@ public class UpdateHotbarFakePacket implements CustomPayload {
         map = new Int2ObjectArrayMap<>(size);
         for (int i = 0; i < size; i++) {
             int slot = buf.readInt();
-            ItemStack stack = buf.readItemStack();
+            // In 1.21.1, readItemStack() was replaced with ItemStack.OPTIONAL_PACKET_CODEC
+            ItemStack stack = ItemStack.OPTIONAL_PACKET_CODEC.decode(buf);
             map.put(slot, stack);
         }
     }
@@ -42,7 +43,8 @@ public class UpdateHotbarFakePacket implements CustomPayload {
         buf.writeInt(map.size());
         map.forEach((slot, stack) -> {
             buf.writeInt(slot);
-            buf.writeItemStack(stack);
+            // In 1.21.1, writeItemStack() was replaced with ItemStack.OPTIONAL_PACKET_CODEC
+            ItemStack.OPTIONAL_PACKET_CODEC.encode(buf, stack);
         });
     }
 
@@ -62,7 +64,6 @@ public class UpdateHotbarFakePacket implements CustomPayload {
     public static void registerListener() {
         InventoryModifiedEvent.EVENT.register((inv, map) -> {
             if (!inv.player.getWorld().isClient) return;
-
             Int2ObjectMap<ItemStack> changed = new Int2ObjectArrayMap<>(inv.main.size());
             int i = 0;
             for (ItemStack stack : inv.main) {

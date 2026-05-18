@@ -37,8 +37,9 @@ public class GameRendererMixin {
         }
 
         if (localPlayer.equals(client.getCameraEntity()) && localPlayer instanceof PlayerEntity) {
-            replayfps$prevGamemode = client.interactionManager.getGameMode();
-            client.interactionManager.setGameMode(ClientPlaybackModule.getInstance().getHudGamemode());
+            // In yarn 1.21.1: getCurrentGameMode() is the correct method name
+            replayfps$prevGamemode = client.interactionManager.getCurrentGameMode();
+            client.interactionManager.setCurrentGameMode(ClientPlaybackModule.getInstance().getHudGamemode());
         }
     }
 
@@ -46,7 +47,7 @@ public class GameRendererMixin {
     void replayfps$onEndRender(RenderTickCounter tickCounter, boolean tick, CallbackInfo ci) {
         if (replayfps$prevGamemode != null) {
             MinecraftClient client = MinecraftClient.getInstance();
-            client.interactionManager.setGameMode(replayfps$prevGamemode);
+            client.interactionManager.setCurrentGameMode(replayfps$prevGamemode);
         }
         replayfps$prevGamemode = null;
     }
