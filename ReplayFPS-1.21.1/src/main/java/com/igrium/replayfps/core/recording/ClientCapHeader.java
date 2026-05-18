@@ -131,8 +131,8 @@ public class ClientCapHeader {
     }
 
     public void readHeader(InputStream in) throws IOException {
-        // In 1.21.1 yarn: NbtSizeTracker.unlimitedHeap() is the correct method
-        NbtCompound nbt = NbtIo.readCompound(new DataInputStream(in), NbtSizeTracker.unlimitedHeap());
+        // In 1.21.1 yarn: NbtSizeTracker.ofUnlimitedBytes() is the correct method
+        NbtCompound nbt = NbtIo.readCompound(new DataInputStream(in), NbtSizeTracker.ofUnlimitedBytes());
         readNBT(nbt);
     }
 

@@ -43,7 +43,6 @@ public record SetGamemodeFakePacket(GameMode gamemode) implements CustomPayload 
         ClientPlayerEvents.SET_GAMEMODE.register((player, oldGamemode, newGamemode) -> {
             FakePacketManager.injectFakePacket(new SetGamemodeFakePacket(newGamemode));
         });
-
         ClientJoinedWorldEvent.EVENT.register((client, world) -> {
             FakePacketManager.injectFakePacket(new SetGamemodeFakePacket(
                     client.interactionManager.getCurrentGameMode()));

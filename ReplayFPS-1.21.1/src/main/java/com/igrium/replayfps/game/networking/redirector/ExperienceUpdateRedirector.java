@@ -22,12 +22,9 @@ public class ExperienceUpdateRedirector implements PacketRedirector<ExperienceBa
     @Override
     public void redirect(ExperienceBarUpdateS2CPacket packet, PlayerEntity localPlayer, MinecraftClient client) {
         client.execute(() -> {
-            // In 1.21.1 yarn: getBarProgress(), getExperienceLevel() (=level int), getExperience() (=total)
             localPlayer.experienceProgress = packet.getBarProgress();
             localPlayer.experienceLevel = packet.getExperienceLevel();
             localPlayer.totalExperience = packet.getExperience();
-
-            client.player.setExperience(packet.getBarProgress(), packet.getExperienceLevel(), packet.getExperience());
         });
     }
 }
