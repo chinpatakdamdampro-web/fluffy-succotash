@@ -9,6 +9,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
@@ -33,8 +34,8 @@ public class UpdateHotbarFakePacket implements CustomPayload {
         map = new Int2ObjectArrayMap<>(size);
         for (int i = 0; i < size; i++) {
             int slot = buf.readInt();
-            // In 1.21.1, readItemStack() was replaced with ItemStack.OPTIONAL_PACKET_CODEC
-            ItemStack stack = ItemStack.OPTIONAL_PACKET_CODEC.decode(buf);
+            NbtCompound nbt = buf.readNbt();
+            ItemStack stack = nbt != null ? ItemStack.fromNbt(null, nbt).orElse(ItemStack.EMPTY) : ItemStack.EMPTY;
             map.put(slot, stack);
         }
     }
@@ -43,8 +44,9 @@ public class UpdateHotbarFakePacket implements CustomPayload {
         buf.writeInt(map.size());
         map.forEach((slot, stack) -> {
             buf.writeInt(slot);
-            // In 1.21.1, writeItemStack() was replaced with ItemStack.OPTIONAL_PACKET_CODEC
-            ItemStack.OPTIONAL_PACKET_CODEC.encode(buf, stack);
+            NbtCompound nbt = new NbtCompound();
+            stack.encode(null, nbt);
+            buf.writeNbt(nbt);
         });
     }
 
