@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.igrium.replayfps.core.mixin.ClientConnectionAccessor;
 import com.igrium.replayfps.core.networking.event.FakePacketRegistrationCallback;
 import com.igrium.replayfps.core.playback.ClientCapPlayer;
 import com.igrium.replayfps.core.playback.ClientPlaybackModule;
@@ -22,13 +21,8 @@ import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
 import net.minecraft.util.Identifier;
 
-/**
- * Manages "fake packets" - custom payloads that are injected into the replay
- * stream during recording and applied during playback.
- */
 public class FakePacketManager {
 
-    /** Namespace prefix used to mark payloads as fake/replay packets. */
     public static final String PREFIX = "rp_";
 
     public static enum SpectatorRule { APPLY, SKIP }
@@ -52,20 +46,14 @@ public class FakePacketManager {
         FakePacketRegistrationCallback.EVENT.invoker().register(this);
     }
 
-    /** Returns true if the given ID has the fake-packet prefix. */
     public static boolean isFakePacket(Identifier rawId) {
         return rawId.getNamespace().startsWith(PREFIX);
     }
 
-    /**
-     * Process an incoming fake-packet payload (called from the mixin).
-     * @return true if the payload was consumed.
-     */
     public boolean processPacket(CustomPayload payload) {
         Identifier rawId = payload.getId().id();
         if (!rawId.getNamespace().startsWith(PREFIX)) return false;
 
-        // Strip the prefix to get the original id
         String namespace = rawId.getNamespace().substring(PREFIX.length());
         Identifier id = Identifier.of(namespace, rawId.getPath());
 
@@ -87,7 +75,6 @@ public class FakePacketManager {
             if (client.getCameraEntity() != player && rule != SpectatorRule.APPLY) return;
 
             try {
-                // The payload stored inside PrefixedPayload is the real typed payload
                 if (payload instanceof PrefixedPayload prefixed && entry.type.isInstance(prefixed.inner())) {
                     entry.handler.handle(entry.type.cast(prefixed.inner()), module, clientCap, player);
                 }
@@ -112,19 +99,16 @@ public class FakePacketManager {
 
     private record FakePacketHandlerEntry<T extends CustomPayload>(Class<T> type, FakePacketHandler<T> handler) {}
 
-    /**
-     * Inject a fake payload into the replay packet stream during recording.
-     */
     public static <T extends CustomPayload> void injectFakePacket(T payload) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client.getNetworkHandler() == null || client.player == null) return;
         injectPacket(new CustomPayloadS2CPacket(new PrefixedPayload(payload)));
     }
 
     public static void injectPacket(Packet<?> packet) {
         MinecraftClient client = MinecraftClient.getInstance();
         ClientPlayNetworkHandler netHandler = client.getNetworkHandler();
-        if (netHandler == null) {
-            throw new IllegalStateException("Packets can only be injected while a game is active.");
-        }
+        if (netHandler == null) return;
         if (PlaybackUtils.isPlayingReplay()) return;
 
         Channel channel = ((ClientConnectionAccessor) netHandler.getConnection()).replayfps$getChannel();
@@ -135,10 +119,6 @@ public class FakePacketManager {
         }
     }
 
-    /**
-     * A CustomPayload wrapper that prepends the rp_ prefix to the namespace so our
-     * mixin can intercept it before standard packet handlers process it.
-     */
     public static final class PrefixedPayload implements CustomPayload {
 
         private final CustomPayload inner;
@@ -155,12 +135,10 @@ public class FakePacketManager {
             return prefixedId;
         }
 
-        /** Returns the original (un-prefixed) inner payload. */
         public CustomPayload inner() {
             return inner;
         }
 
-        /** Returns the original (un-prefixed) identifier. */
         public Identifier innerId() {
             return inner.getId().id();
         }
