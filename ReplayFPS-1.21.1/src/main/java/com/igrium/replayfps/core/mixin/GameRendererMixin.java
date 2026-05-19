@@ -25,9 +25,12 @@ public class GameRendererMixin {
         MinecraftClient client = MinecraftClient.getInstance();
         ClientCapPlayer playback = ClientPlaybackModule.getInstance().getCurrentPlayer();
 
-        // Null checks to prevent crash during world loading
-        if (playback == null || client.world == null || client.interactionManager == null
-                || client.cameraEntity == null || !ReplayFPS.getInstance().config().shouldDrawHud()) {
+        if (playback == null
+                || client.world == null
+                || client.player == null
+                || client.interactionManager == null
+                || client.cameraEntity == null
+                || !ReplayFPS.getInstance().config().shouldDrawHud()) {
             replayfps$prevGamemode = null;
             return;
         }
@@ -49,7 +52,7 @@ public class GameRendererMixin {
     void replayfps$onEndRender(RenderTickCounter tickCounter, boolean tick, CallbackInfo ci) {
         if (replayfps$prevGamemode != null) {
             MinecraftClient client = MinecraftClient.getInstance();
-            if (client.interactionManager != null) {
+            if (client.interactionManager != null && client.player != null) {
                 client.interactionManager.setGameMode(replayfps$prevGamemode);
             }
         }
