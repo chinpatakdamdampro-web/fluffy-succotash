@@ -11,15 +11,15 @@ import net.fabricmc.fabric.impl.networking.AbstractChanneledNetworkAddon;
 import net.minecraft.network.packet.CustomPayload;
 
 @Mixin(value = AbstractChanneledNetworkAddon.class, remap = false)
-public class AbstractChanneledNetworkAddonMixin<H> {
+public abstract class AbstractChanneledNetworkAddonMixin<H> {
 
     @Inject(
-        method = "handle(Lnet/minecraft/network/packet/CustomPayload;)Z",
+        method = "receive(Lnet/minecraft/network/packet/CustomPayload;)Z",
         at = @At("HEAD"),
         remap = false,
         cancellable = true
     )
-    public void replayfps$handle(CustomPayload payload, CallbackInfoReturnable<Boolean> ci) {
+    public void replayfps$receive(CustomPayload payload, CallbackInfoReturnable<Boolean> ci) {
         if (CustomPacketReceivedEvent.EVENT.invoker().onPacketReceived(payload)) {
             ci.setReturnValue(true);
         }
