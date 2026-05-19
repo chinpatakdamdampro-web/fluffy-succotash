@@ -85,16 +85,15 @@ public class ClientPlaybackModule extends EventRegistrations implements Module {
             var opt = file.get(ClientRecordingModule.ENTRY);
             if (!opt.isPresent()) return;
 
+            // Fix: use the stream directly instead of calling opt.get() twice
             InputStream stream = new BufferedInputStream(opt.get());
-            currentPlayer = new ClientCapPlayer(new ClientCapReader(opt.get()));
+            currentPlayer = new ClientCapPlayer(new ClientCapReader(stream));
 
-            stream.close();
+            fakePacketManager = new FakePacketManager(client, this, currentPlayer);
+            fakePacketManager.initReceivers();
         } catch (IOException e) {
             LogUtils.getLogger().error("Error loading client capture.", e);
         }
-
-        fakePacketManager = new FakePacketManager(client, this, currentPlayer);
-        fakePacketManager.initReceivers();
     }
 
     { on(ReplayClosingCallback.EVENT, this::onReplayClosing); }
@@ -165,9 +164,6 @@ public class ClientPlaybackModule extends EventRegistrations implements Module {
         return false;
     }
 
-    /**
-     * If a client-cap is playing, get the player who recorded the replay.
-     */
     public Optional<PlayerEntity> getLocalPlayer() {
         if (client.world == null || this.currentPlayer == null)
             return Optional.empty();
@@ -228,4 +224,4 @@ public class ClientPlaybackModule extends EventRegistrations implements Module {
             return java.util.Optional.ofNullable(client.world);
         }
     }
-}
+        }
