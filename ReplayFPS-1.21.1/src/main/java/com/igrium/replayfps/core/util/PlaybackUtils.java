@@ -13,30 +13,22 @@ import net.minecraft.world.World;
 public final class PlaybackUtils {
     private PlaybackUtils() {};
 
-    /**
-     * If there is a client-capture playing, get the ID of the local player it was
-     * captured on. Should only be used when you don't have access to a
-     * {@link ClientPlaybackContext}.
-     * 
-     * @return ID of the player who captured the replay, or <code>null</code> if there is no
-     *         client-capture playing.
-     */
     public static Integer getCurrentPlaybackPlayerID() {
         ClientCapPlayer player = ClientPlaybackModule.getInstance().getCurrentPlayer();
-        if (player == null) return null;
-        if (player.getReader().getHeader() == null) return null;
-        return player.getReader().getHeader().getLocalPlayerID();
+        if (player == null) {
+            net.minecraft.client.MinecraftClient.getInstance();
+            com.mojang.logging.LogUtils.getLogger().warn("[ReplayFPS] getCurrentPlaybackPlayerID: currentPlayer is NULL - ccap not loaded!");
+            return null;
+        }
+        if (player.getReader().getHeader() == null) {
+            com.mojang.logging.LogUtils.getLogger().warn("[ReplayFPS] getCurrentPlaybackPlayerID: header is NULL!");
+            return null;
+        }
+        int id = player.getReader().getHeader().getLocalPlayerID();
+        com.mojang.logging.LogUtils.getLogger().info("[ReplayFPS] getCurrentPlaybackPlayerID: {}", id);
+        return id;
     }
 
-    /**
-     * If there is a client-capture playing, get the local player that it was
-     * captured on. Should only be called when you don't have access to a
-     * {@link ClientPlaybackContext}.
-     * 
-     * @return The player who captured the replay. <code>null</code> if there is no
-     *         client-capture playing or the player could not be found.
-     */
-    @SuppressWarnings("resource")
     public static PlayerEntity getCurrentPlaybackPlayer() {
         World world = MinecraftClient.getInstance().world;
         if (world == null) return null;
@@ -50,29 +42,16 @@ public final class PlaybackUtils {
         return null;
     }
 
-    /**
-     * Determine if the current camera entity is the player that recorded the
-     * current client-capture.
-     * 
-     * @return <code>true</code> if we're viewing from the perspective from the
-     *         original capture player. <code>false</code> if we're not playing a
-     *         client-capture or we're not looking through their perspective.
-     */
-    @SuppressWarnings("resource")
     public static boolean isViewingPlaybackPlayer() {
         Entity camera = MinecraftClient.getInstance().cameraEntity;
         if (camera == null) return false;
-        return Integer.valueOf(camera.getId()).equals(getCurrentPlaybackPlayerID());
+        Integer playbackId = getCurrentPlaybackPlayerID();
+        boolean result = Integer.valueOf(camera.getId()).equals(playbackId);
+        com.mojang.logging.LogUtils.getLogger().info("[ReplayFPS] isViewingPlaybackPlayer: cameraId={} playbackId={} result={}", camera.getId(), playbackId, result);
+        return result;
     }
     
-    /**
-     * If we're currently in the replay editor.
-     * 
-     * @return <code>true</code> if we're in the replay editor or rendering.
-     *         <code>false</code> if we're in the main menu or in a regular game.
-     */
     public static boolean isPlayingReplay() {
-        // TODO: Determine if there's something more reliable than this hack.
         return ReplayModSimplePathing.instance.getGuiPathing() != null;
     }
 }
