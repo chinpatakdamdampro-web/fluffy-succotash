@@ -8,6 +8,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import com.igrium.replayfps.ReplayFPS;
 import com.igrium.replayfps.core.playback.ClientCapPlayer;
 import com.igrium.replayfps.core.playback.ClientPlaybackModule;
+import com.igrium.replayfps.core.util.PlaybackUtils;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.GameRenderer;
@@ -22,6 +23,10 @@ public class GameRendererMixin {
 
     @Inject(method = "render", at = @At("HEAD"))
     void replayfps$onStartRender(RenderTickCounter tickCounter, boolean tick, CallbackInfo ci) {
+        replayfps$prevGamemode = null;
+
+        if (!PlaybackUtils.isPlayingReplay()) return;
+
         MinecraftClient client = MinecraftClient.getInstance();
         ClientCapPlayer playback = ClientPlaybackModule.getInstance().getCurrentPlayer();
 
@@ -31,16 +36,12 @@ public class GameRendererMixin {
                 || client.interactionManager == null
                 || client.cameraEntity == null
                 || !ReplayFPS.getInstance().config().shouldDrawHud()) {
-            replayfps$prevGamemode = null;
             return;
         }
 
         int localPlayerID = playback.getReader().getHeader().getLocalPlayerID();
         Entity localPlayer = client.world.getEntityById(localPlayerID);
-        if (localPlayer == null) {
-            replayfps$prevGamemode = null;
-            return;
-        }
+        if (localPlayer == null) return;
 
         if (localPlayer.equals(client.getCameraEntity()) && localPlayer instanceof PlayerEntity) {
             replayfps$prevGamemode = client.interactionManager.getCurrentGameMode();
@@ -55,7 +56,7 @@ public class GameRendererMixin {
             if (client.interactionManager != null && client.player != null) {
                 client.interactionManager.setGameMode(replayfps$prevGamemode);
             }
+            replayfps$prevGamemode = null;
         }
-        replayfps$prevGamemode = null;
     }
 }
