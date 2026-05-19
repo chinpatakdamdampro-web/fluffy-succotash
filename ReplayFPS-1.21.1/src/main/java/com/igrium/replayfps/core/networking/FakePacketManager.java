@@ -1,5 +1,5 @@
 package com.igrium.replayfps.core.networking;
-
+import com.igrium.replayfps.core.mixin.ClientConnectionAccessor;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
